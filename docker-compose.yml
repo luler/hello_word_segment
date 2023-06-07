@@ -1,7 +1,7 @@
 version: "2"
 services:
   php_nginx:
-    image: hello_word_segment:latest
+    image: registry.cn-shenzhen.aliyuncs.com/luler/hello_word_segment
     restart: always
     privileged: true
     ports:
