@@ -1,0 +1,16 @@
+version: "2"
+services:
+  php_nginx:
+    image: hello_word_segment:latest
+    restart: always
+    privileged: true
+    ports:
+      - 7744:7744
+    volumes:
+      - ./config/nginx/conf:/usr/local/nginx/conf
+      - ./config/php/etc:/usr/local/php/etc
+      - ./config/init.sh:/init.sh
+      - ./code:/home/wwwroot
+      - ./runtime/wwwlogs:/home/wwwlogs
+      - ./config/supervisor/supervisord.conf:/etc/supervisord.conf
+      - ./config/supervisor/supervisord.d:/etc/supervisord.d
