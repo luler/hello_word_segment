@@ -7,10 +7,9 @@ services:
     ports:
       - 7744:7744
     volumes:
-      - ./config/nginx/conf:/usr/local/nginx/conf
-      - ./config/php/etc:/usr/local/php/etc
+      - ./config/php/php.ini:/etc/php.ini
+      - ./config/php/php.d:/etc/php.d
       - ./config/init.sh:/init.sh
-      - ./code:/home/wwwroot
-      - ./runtime/wwwlogs:/home/wwwlogs
+      - ./code:/home/code
       - ./config/supervisor/supervisord.conf:/etc/supervisord.conf
       - ./config/supervisor/supervisord.d:/etc/supervisord.d
