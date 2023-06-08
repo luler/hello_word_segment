@@ -44,6 +44,7 @@ class Router extends AbstractRouter
             $routeCollector->get('/test', 'api/home/IndexController/test');
             $routeCollector->post('/jiebaCutForSearch', 'api/home/IndexController/jiebaCutForSearch');
             $routeCollector->post('/jiebaCut', 'api/home/IndexController/jiebaCut');
+            $routeCollector->post('/jiebaPossegCut', 'api/home/IndexController/jiebaPossegCut');
             // +----------------------------------------------------------------------
             // | 前台接口
             // +----------------------------------------------------------------------

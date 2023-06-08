@@ -11,6 +11,7 @@ namespace App\Helper;
 use EasySwoole\Component\Singleton;
 use Fukuball\Jieba\Finalseg;
 use Fukuball\Jieba\Jieba;
+use Fukuball\Jieba\Posseg;
 
 class JiebaHelper
 {
@@ -20,6 +21,7 @@ class JiebaHelper
     {
         Jieba::init();
         Finalseg::init();
+        Posseg::init();
     }
 
     /**
@@ -45,5 +47,18 @@ class JiebaHelper
     public function jiebaCut($sentence, $cut_all = false, $options = ["HMM" => true])
     {
         return Jieba::cut($sentence, $cut_all, $options);
+    }
+
+    /**
+     * 詞性分詞
+     * @param $sentence
+     * @param $options
+     * @return array
+     * @author 我只想看看蓝天 <1207032539@qq.com>
+     * @link 词性说明：https://gist.github.com/luw2007/6016931
+     */
+    public function jiebaPossegCut($sentence, $options = ["HMM" => true])
+    {
+        return Posseg::cut($sentence, $options);
     }
 }

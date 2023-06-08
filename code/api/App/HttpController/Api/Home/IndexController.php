@@ -62,4 +62,26 @@ class IndexController extends HomeBaseController
 
         return $this->successResponse('处理成功', $res);
     }
+
+    /**
+     * 詞性分詞
+     * @author 我只想看看蓝天 <1207032539@qq.com>
+     * @link 词性说明：https://gist.github.com/luw2007/6016931
+     */
+    public function jiebaPossegCut()
+    {
+        $field = ['sentence', 'options'];
+        $param = _apiParam($field);
+        ValidateHelper::checkData($param, [
+            'sentence|内容' => 'required',
+//            'options|参数选项' => 'required',
+        ]);
+        if (isset($param['options']) && !is_array($param['options'])) {
+            throwException('参数选项必须为数组');
+        }
+
+        $res = JiebaHelper::getInstance()->jiebaPossegCut($param['sentence'], $param['options'] ?? ["HMM" => true]);
+
+        return $this->successResponse('处理成功', $res);
+    }
 }
