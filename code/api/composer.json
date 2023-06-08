@@ -1,6 +1,6 @@
 {
     "require": {
-        "php": ">=7.1",
+        "php": ">=7.1|<=7.3",
         "easyswoole/easyswoole": "3.x",
         "fukuball/jieba-php": "^0.34.0",
         "easyswoole/validate": "^2.1"

@@ -71,7 +71,7 @@ class Core
         defined('EASYSWOOLE_WEB_SOCKET_SERVER') or define('EASYSWOOLE_WEB_SOCKET_SERVER', 3);
         $eventFile = EASYSWOOLE_ROOT . '/EasySwooleEvent.php';
         if (!file_exists($eventFile)) {
-            die(Color::red("EasySwooleEvent.php file miss ,check again or run php easyswoole.php install again \n"));
+            die(Color::red("EasySwooleEvent.php file miss ,check again or run php easyswoole install again \n"));
         } else {
             require_once $eventFile;
         }
@@ -150,14 +150,12 @@ class Core
         }
         defined('EASYSWOOLE_LOG_DIR') or define('EASYSWOOLE_LOG_DIR', $logDir);
 
-        $mode = $this->runMode();
-
         // 设置默认文件目录值(如果自行指定了目录则优先使用指定的)
         if (!Config::getInstance()->getConf('MAIN_SERVER.SETTING.pid_file')) {
-            Config::getInstance()->setConf('MAIN_SERVER.SETTING.pid_file', $tempDir . "/{$mode}.pid");
+            Config::getInstance()->setConf('MAIN_SERVER.SETTING.pid_file', $tempDir . '/pid.pid');
         }
         if (!Config::getInstance()->getConf('MAIN_SERVER.SETTING.log_file')) {
-            Config::getInstance()->setConf('MAIN_SERVER.SETTING.log_file', $logDir . "/{$mode}.swoole.log");
+            Config::getInstance()->setConf('MAIN_SERVER.SETTING.log_file', $logDir . '/swoole.log');
         }
     }
 
@@ -241,7 +239,7 @@ class Core
             if ($waitTime == 0) {
                 $waitTime = 5;
             }
-            $dispatcher = Dispatcher::getInstance()->setNamespacePrefix($namespace)->setMaxDepth($depth);
+            $dispatcher = Dispatcher::getInstance()->setNamespacePrefix($namespace)->setMaxDepth($depth)->setControllerMaxPoolNum($max)->setControllerPoolWaitTime($waitTime);;
             //补充HTTP_EXCEPTION_HANDLER默认回调
             $httpExceptionHandler = Di::getInstance()->get(SysConst::HTTP_EXCEPTION_HANDLER);
             if (!is_callable($httpExceptionHandler)) {
@@ -352,8 +350,7 @@ class Core
 
     private function extraHandler()
     {
-        $mode = $this->runMode();
-        $serverName = Config::getInstance()->getConf('SERVER_NAME').".{$mode}";
+        $serverName = Config::getInstance()->getConf('SERVER_NAME');
         //注册Task进程
         $config = Config::getInstance()->getConf('MAIN_SERVER.TASK');
         $config = TaskManager::getInstance()->getConfig()->merge($config);

@@ -59,7 +59,7 @@ class Server implements CommandInterface
     {
         defined('EASYSWOOLE_RUNNING') or define('EASYSWOOLE_RUNNING', true);
         $conf = Config::getInstance();
-        // php easyswoole.php server start -d
+        // php easyswoole server start -d
         $daemonize = CommandManager::getInstance()->issetOpt('d');
 
         if ($daemonize) {
@@ -141,7 +141,7 @@ class Server implements CommandInterface
                         break;
                     } else {
                         if (time() - $time > 15) {
-                            $msg = Color::danger("stop server fail for pid:{$pid} , try [php easyswoole.php server stop -force] again");
+                            $msg = Color::danger("stop server fail for pid:{$pid} , try [php easyswoole server stop -force] again");
                             break;
                         }
                     }

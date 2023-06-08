@@ -17,16 +17,16 @@
         }
     ],
     "require": {
-        "php": "^8.0",
+        "php": ">=7.1.0",
         "ext-swoole": ">=4.4.4",
         "ext-json": "*",
         "easyswoole/component": "^2.0",
         "easyswoole/spl": "^1.0",
-        "easyswoole/http-annotation": "3.x",
+        "easyswoole/http-annotation": "^2.0",
         "easyswoole/utility": "^1.0",
         "easyswoole/trigger": "^1.0",
         "easyswoole/config": "^1.0",
-        "easyswoole/socket": "^1.2",
+        "easyswoole/socket": "^1.1",
         "easyswoole/task": "^1.1",
         "easyswoole/command": "^1.1",
         "easyswoole/bridge": "^1.0",
@@ -49,6 +49,6 @@
         "easyswoole/swoole-ide-helper": "^1.2"
     },
     "bin": [
-        "bin/easyswoole.php"
+        "bin/easyswoole"
     ]
 }

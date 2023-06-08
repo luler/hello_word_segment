@@ -38,8 +38,11 @@ class EventRegister extends MultiContainer
 
     function __construct(array $allowKeys = null)
     {
-        $Ref = new \ReflectionClass(self::class);
-        $constants = $Ref->getConstants();
-        parent::__construct(array_values($constants));
+        parent::__construct([
+            'start','shutdown','workerStart','workerStop','workerExit','timer',
+            'connect','receive','packet','close','bufferFull','bufferEmpty','task',
+            'finish','pipeMessage','workerError','managerStart','managerStop',
+            'request','handShake','message','open'
+        ]);
     }
 }

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb
+class ComposerStaticInitf0c980fa46c7d722196bee655984a3fa
 {
     public static $files = array (
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
@@ -50,6 +50,8 @@ class ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb
             'EasySwoole\\HttpAnnotation\\' => 26,
             'EasySwoole\\HotReload\\' => 21,
             'EasySwoole\\EasySwoole\\' => 22,
+            'EasySwoole\\DoctrineAnnotation\\Tests\\' => 36,
+            'EasySwoole\\DoctrineAnnotation\\' => 30,
             'EasySwoole\\Crontab\\' => 19,
             'EasySwoole\\Config\\Test\\' => 23,
             'EasySwoole\\Config\\' => 18,
@@ -57,10 +59,12 @@ class ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb
             'EasySwoole\\Component\\' => 21,
             'EasySwoole\\Command\\' => 19,
             'EasySwoole\\Bridge\\' => 18,
+            'EasySwoole\\Annotation\\' => 22,
         ),
         'D' => 
         array (
             'Doctrine\\Instantiator\\' => 22,
+            'Doctrine\\Common\\Lexer\\' => 22,
             'DeepCopy\\' => 9,
         ),
         'C' => 
@@ -162,6 +166,14 @@ class ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb
         array (
             0 => __DIR__ . '/..' . '/easyswoole/easyswoole/src',
         ),
+        'EasySwoole\\DoctrineAnnotation\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/easyswoole/doctrine-annotations/tests',
+        ),
+        'EasySwoole\\DoctrineAnnotation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/easyswoole/doctrine-annotations/src',
+        ),
         'EasySwoole\\Crontab\\' => 
         array (
             0 => __DIR__ . '/..' . '/easyswoole/crontab/src',
@@ -190,9 +202,17 @@ class ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb
         array (
             0 => __DIR__ . '/..' . '/easyswoole/bridge/src',
         ),
+        'EasySwoole\\Annotation\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/easyswoole/annotation/src',
+        ),
         'Doctrine\\Instantiator\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/instantiator/src/Doctrine/Instantiator',
+        ),
+        'Doctrine\\Common\\Lexer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/doctrine/lexer/lib/Doctrine/Common/Lexer',
         ),
         'DeepCopy\\' => 
         array (
@@ -843,9 +863,9 @@ class ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit0799697dc0ca66f46746938eb52cc5bb::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitf0c980fa46c7d722196bee655984a3fa::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitf0c980fa46c7d722196bee655984a3fa::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitf0c980fa46c7d722196bee655984a3fa::$classMap;
 
         }, null, ClassLoader::class);
     }

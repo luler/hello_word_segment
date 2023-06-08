@@ -10,45 +10,39 @@ namespace EasySwoole\Http;
 
 
 use EasySwoole\Component\Context\ContextManager;
-use EasySwoole\Component\Context\Exception\ModifyError;
 use EasySwoole\Http\AbstractInterface\AbstractRouter;
 use EasySwoole\Http\AbstractInterface\Controller;
-use EasySwoole\Http\Exception\Exception;
+use EasySwoole\Http\Exception\ControllerPoolEmpty;
 use EasySwoole\Http\Exception\RouterError;
 use EasySwoole\Http\Message\Status;
 use FastRoute\Dispatcher\GroupCountBased;
 use FastRoute\Dispatcher as RouterDispatcher;
-use FastRoute\RouteCollector;
+use Swoole\Coroutine\Channel;
 
 class Dispatcher
 {
-    private bool|null|GroupCountBased $router = null;
+    private $router = null;
     /**
      * @var AbstractRouter|null
      */
-    private ?AbstractRouter $routerRegister = null;
+    private $routerRegister = null;
+    private $controllerPoolCreateNum = [];
     //以下为外部配置项目
-    private string $namespacePrefix;
-    private int $maxDepth;
-    /** @var null|callable */
+    private $namespacePrefix;
+    private $maxDepth;
+    private $maxPoolNum;
     private $httpExceptionHandler = null;
+    private $controllerPoolWaitTime = 5.0;
     /** @var callable */
     private $onRouterCreate;
 
-    private bool $enableFakeRouter = false;
-
-    function __construct(string $namespacePrefix = null,int $maxDepth = 5)
+    function __construct(string $namespacePrefix = null,int $maxDepth = 5,int $maxPoolNum = 200)
     {
         if($namespacePrefix !== null){
             $this->namespacePrefix = trim($namespacePrefix,'\\');
         }
+        $this->maxPoolNum = $maxPoolNum;
         $this->maxDepth = $maxDepth;
-    }
-
-    function enableFakeRouter():Dispatcher
-    {
-        $this->enableFakeRouter = true;
-        return $this;
     }
 
     function setNamespacePrefix(string $space):Dispatcher
@@ -57,6 +51,17 @@ class Dispatcher
         return $this;
     }
 
+    public function setControllerPoolWaitTime(float $controllerPoolWaitTime):Dispatcher
+    {
+        $this->controllerPoolWaitTime = $controllerPoolWaitTime;
+        return $this;
+    }
+
+    public function setControllerMaxPoolNum(int $num):Dispatcher
+    {
+        $this->maxPoolNum = $num;
+        return $this;
+    }
 
     function setOnRouterCreate(callable $call):Dispatcher
     {
@@ -76,14 +81,25 @@ class Dispatcher
         return $this;
     }
 
-    /**
-     * @throws RouterError|ModifyError
-     */
-    public function dispatch(Request $request, Response $response):void
+    public function dispatch(Request $request,Response $response):void
     {
         // 进行一次初始化判定
         if($this->router === null){
-            $this->initRouter($this->enableFakeRouter);
+            $r = $this->initRouter( $this->namespacePrefix.'\\Router');
+            if($r instanceof AbstractRouter){
+                if (is_callable($this->onRouterCreate)) {
+                    call_user_func($this->onRouterCreate,$r);
+                }
+                $this->routerRegister = $r;
+                $data = $r->getRouteCollector()->getData();
+                if(!empty($data)){
+                    $this->router = new GroupCountBased($data);
+                }else{
+                    $this->router = false;
+                }
+            }else{
+                $this->router = false;
+            }
         }
 
         $path = UrlParser::pathInfo($request->getUri()->getPath());
@@ -169,7 +185,7 @@ class Dispatcher
 
     }
 
-    protected function controllerExecutor(Request $request, Response $response, string $path)
+    private function controllerExecutor(Request $request, Response $response, string $path)
     {
         $pathInfo = ltrim($path,"/");
         $list = explode("/",$pathInfo);
@@ -181,10 +197,7 @@ class Dispatcher
         while ($maxDepth >= 0){
             $className = '';
             for ($i=0 ;$i<$maxDepth;$i++){
-                //处理例如  /api//user/ 等中间多了 路径分隔符的问题
-                if(!empty($list[$i])){
-                    $className = $className."\\".ucfirst($list[$i] ?: 'Index');//为一级控制器Index服务
-                }
+                $className = $className."\\".ucfirst($list[$i] ?: 'Index');//为一级控制器Index服务
             }
             if(class_exists($this->namespacePrefix.$className)){
                 //尝试获取该class后的actionName
@@ -206,14 +219,14 @@ class Dispatcher
 
         if(!empty($finalClass)){
             try{
-                $controllerObject = new $finalClass($request,$response,$actionName);
+                $controllerObject = $this->getController($finalClass);
             }catch (\Throwable $throwable){
                 $this->onException($throwable,$request,$response);
                 return;
             }
             if($controllerObject instanceof Controller){
                 try{
-                    $forward = $controllerObject->__hook();
+                    $forward = $controllerObject->__hook($actionName,$request,$response);
                     if(is_string($forward) && (strlen($forward) > 0) && ($forward != $path)){
                         $forward = UrlParser::pathInfo($forward);
                         $request->getUri()->withPath($forward);
@@ -221,9 +234,11 @@ class Dispatcher
                     }
                 }catch (\Throwable $throwable){
                     $this->onException($throwable,$request,$response);
+                }finally {
+                    $this->recycleController($finalClass,$controllerObject);
                 }
             }else{
-                $throwable = new Exception('no controller object '.$finalClass);
+                $throwable = new ControllerPoolEmpty('controller pool empty for '.$finalClass);
                 $this->onException($throwable,$request,$response);
             }
         }else{
@@ -243,42 +258,58 @@ class Dispatcher
         }
     }
 
-    function initRouter(bool $autoCreate = false):void
+    protected function getController(string $class)
     {
-        $r = null;
-        $class = $this->namespacePrefix.'\\Router';
+        $classKey = $this->generateClassKey($class);
+        if(!isset($this->$classKey)){
+            $this->$classKey = new Channel($this->maxPoolNum+1);
+            $this->controllerPoolCreateNum[$classKey] = 0;
+        }
+        $channel = $this->$classKey;
+        //懒惰创建模式
+        /** @var Channel $channel */
+        if($channel->isEmpty()){
+            $createNum = $this->controllerPoolCreateNum[$classKey];
+            if($createNum < $this->maxPoolNum){
+                $this->controllerPoolCreateNum[$classKey] = $createNum+1;
+                try{
+                    //防止用户在控制器结构函数做了什么东西导致异常
+                    return new $class();
+                }catch (\Throwable $exception){
+                    $this->controllerPoolCreateNum[$classKey] = $createNum;
+                    //直接抛给上层
+                    throw $exception;
+                }
+            }
+            return $channel->pop($this->controllerPoolWaitTime);
+        }
+        return $channel->pop($this->controllerPoolWaitTime);
+    }
+
+    private function generateClassKey(string $class):string
+    {
+        return substr(md5($class), 8, 16);
+    }
+
+    private function recycleController(string $class,Controller $obj)
+    {
+        $classKey = $this->generateClassKey($class);
+        /** @var Channel $channel */
+        $channel = $this->$classKey;
+        $channel->push($obj);
+    }
+
+    protected function initRouter(?string $class = null):?AbstractRouter
+    {
         if(class_exists($class)){
             $ref = new \ReflectionClass($class);
             if($ref->isSubclassOf(AbstractRouter::class)){
-                $r = $ref->newInstance();
+                return $ref->newInstance();
             }else{
                 throw new RouterError("class : {$class} not AbstractRouter class");
             }
         }else{
-            if($autoCreate){
-                $r = new class extends AbstractRouter{
-                    function initialize(RouteCollector $routeCollector)
-                    {
-
-                    }
-                };
-            }
+            return null;
         }
-
-        if($r instanceof AbstractRouter){
-            $this->routerRegister = $r;
-            if (is_callable($this->onRouterCreate)) {
-                call_user_func($this->onRouterCreate,$r);
-            }
-            $data = $r->getRouteCollector()->getData();
-            if(!empty($data)){
-                $this->router = new GroupCountBased($data);
-            }else{
-                $this->router = false;
-            }
-        }else{
-            $this->router = false;
-        }
-
     }
 }

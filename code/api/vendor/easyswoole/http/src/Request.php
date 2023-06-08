@@ -46,7 +46,7 @@ class Request extends ServerRequest
         }else{
             $res = [];
             foreach ($key as $item){
-                $res[$item] = $data[$item] ?? null;
+                $res[$item] = isset($data[$item])? $data[$item] : null;
             }
             if(count($key) == 1){
                 return array_shift($res);
@@ -66,14 +66,14 @@ class Request extends ServerRequest
         $uri = new Uri();
         $uri->withScheme("http");
         $uri->withPath($this->request->server['path_info']);
-        $query = $this->request->server['query_string'] ?? '';
+        $query = isset($this->request->server['query_string']) ? $this->request->server['query_string'] : '';
         $uri->withQuery($query);
         //host与port以header为准，防止经过proxy
         if(isset($this->request->header['host'])){
             $host = $this->request->header['host'];
             $host = explode(":",$host);
             $realHost = $host[0];
-            $port = $host[1] ?? null;
+            $port = isset($host[1]) ? $host[1] : null;
         }else{
             $realHost = '127.0.0.1';
             $port = $this->request->server['server_port'];
@@ -85,17 +85,14 @@ class Request extends ServerRequest
 
     private function initHeaders()
     {
-        $headers = $this->request->header ?? [];
+        $headers = isset($this->request->header) ? $this->request->header :[];
         foreach ($headers as $header => $val){
             $this->withAddedHeader($header,$val);
         }
     }
 
-    private function initFiles(): array
+    private function initFiles()
     {
-        if(isset($this->request->ignoreFile) && $this->request->ignoreFile){
-            return [];
-        }
         if(isset($this->request->files)){
             $normalized = array();
             foreach($this->request->files as $key => $value){
@@ -111,6 +108,7 @@ class Request extends ServerRequest
                             $normalized[$key][] = $file;
                         }
                     }
+                    continue;
                 }else{
                     $file = $this->initFile($value);
                     if($file){
@@ -120,7 +118,7 @@ class Request extends ServerRequest
             }
             return $normalized;
         }else{
-            return [];
+            return array();
         }
     }
 
@@ -140,17 +138,17 @@ class Request extends ServerRequest
 
     private function initCookie()
     {
-        return $this->request->cookie ?? [];
+        return isset($this->request->cookie) ? $this->request->cookie : [];
     }
 
     private function initPost()
     {
-        return $this->request->post ?? [];
+        return isset($this->request->post) ? $this->request->post : [];
     }
 
     private function initGet()
     {
-        return $this->request->get ?? [];
+        return isset($this->request->get) ? $this->request->get : [];
     }
 
     final public function __toString():string

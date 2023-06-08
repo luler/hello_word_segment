@@ -10,7 +10,6 @@ namespace EasySwoole\Http;
 
 use EasySwoole\Http\Message\Response as MessageResponse;
 use EasySwoole\Http\Message\Status;
-use Swoole\Http\Response as SwooleResponse;
 
 class Response extends MessageResponse
 {
@@ -24,7 +23,7 @@ class Response extends MessageResponse
     private $isEndResponse = self::STATUS_NOT_END;//1 逻辑end  2真实end 3分离响应
     private $isChunk = false;
 
-    final public function __construct(SwooleResponse $response = null)
+    final public function __construct(\Swoole\Http\Response $response = null)
     {
         $this->response = $response;
         parent::__construct();
@@ -145,18 +144,19 @@ class Response extends MessageResponse
 
     static function createFromFd(int $fd):Response
     {
-        $resp = SwooleResponse::create($fd);
+        $resp = \Swoole\Http\Response::create($fd);
         return new Response($resp);
     }
 
     final public function __toString():string
     {
+        // TODO: Implement __toString() method.
         return Utility::toString($this);
     }
 
     public function __destruct()
     {
+        // TODO: Implement __destruct() method.
         $this->getBody()->close();
-        $this->response = null;
     }
 }
