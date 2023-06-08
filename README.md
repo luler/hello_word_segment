@@ -69,3 +69,35 @@ docker-compose up -d
   ]
 }
 ```
+
+`POST` /api/jiebaPossegCut
+
+##### 描述
+
+- 词性分词
+
+##### 参数
+
+|参数名|必选|类型|说明|
+|:----    |:---|:----- |-----   |
+|sentence |是 | string | 内容 |
+|options | 否 | array | 参数选项，默认：["HMM" => true]    |
+
+##### 返回示例
+
+```json
+{
+  "message": "处理成功",
+  "code": 200,
+  "info": [
+    {
+      "word": "种植",
+      "tag": "x"
+    },
+    {
+      "word": "手机",
+      "tag": "x"
+    }
+  ]
+}
+```

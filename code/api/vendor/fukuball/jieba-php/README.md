@@ -334,7 +334,7 @@ array(10) {
 }
 ```
 
-功能 4)：詞性分詞
+功能 4)：词性分词
 ==============
 * 詞性說明：[https://gist.github.com/luw2007/6016931](https://gist.github.com/luw2007/6016931)
 

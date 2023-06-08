@@ -50,7 +50,7 @@ class JiebaHelper
     }
 
     /**
-     * 詞性分詞
+     * 词性分词
      * @param $sentence
      * @param $options
      * @return array

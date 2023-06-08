@@ -64,7 +64,7 @@ class IndexController extends HomeBaseController
     }
 
     /**
-     * 詞性分詞
+     * 词性分词
      * @author 我只想看看蓝天 <1207032539@qq.com>
      * @link 词性说明：https://gist.github.com/luw2007/6016931
      */
